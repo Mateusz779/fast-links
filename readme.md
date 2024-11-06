@@ -4,6 +4,10 @@
 
 Fast Links was created to streamline teamwork and increase productivity when working with multiple devices. The application allows for instant sharing of links in real-time by creating virtual rooms where all participants see the same links.
 
+## Attention!
+**The project is mainly intended for use within an intranet. Exposing it on the internet may result in unintended links being added to the room. The author is not responsible for any unlawful use of the tool.**
+
+
 ## Use Cases
 
 - **Online Meetings**: Quickly share materials, presentations, and documents.
