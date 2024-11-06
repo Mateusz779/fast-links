@@ -113,29 +113,11 @@ func getUrlHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, entry.Value, http.StatusFound)
 }
 
-func testHandler(w http.ResponseWriter, r *http.Request) {
-	// Utworzenie mapy do przechowywania nagłówków
-	headers := make(map[string]string)
-
-	// Iteracja przez wszystkie nagłówki
-	for name, values := range r.Header {
-		// Używamy wartości 0, ponieważ nagłówki mogą mieć wiele wartości
-		headers[name] = values[0]
-	}
-
-	// Ustawienie nagłówka Content-Type na application/json
-	w.Header().Set("Content-Type", "application/json")
-
-	// Zwrócenie nagłówków w formacie JSON
-	json.NewEncoder(w).Encode(headers)
-}
-
 func main() {
 	// Obsługa endpointów API
 	http.HandleFunc("/api/set", setHandler)
 	http.HandleFunc("/api/get", getHandler)
 	http.HandleFunc("/api/url", getUrlHandler)
-	http.HandleFunc("/test", testHandler)
 
 	// Serwowanie plików statycznych
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
