@@ -13,7 +13,18 @@
       <h1 id="info">Click the button to start.</h1>
       <a href="" id="url" rel="noopener noreferrer" target="_blank"></a>
       <button id="startBtn">Start listening</button>
+      <div class="checkbox-container">
+        <input type="checkbox" id="saveOldLink" />
+        <label for="saveOldLink">Save old link</label>
+      </div>
+      <div class="checkbox-container">
+        <input type="checkbox" id="autoListen" onclick="autoListen"/>
+        <label for="autoListen">Auto Listen</label>
+      </div>
     </div>
+    
+    <div id="toast" class="toast">This is a toast message!</div>
+
     <script src="/js/app.js"></script>
   </body>
 </html>

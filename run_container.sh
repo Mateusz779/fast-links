@@ -1,50 +1,66 @@
-#!/bin/sh
+#!/bin/bash
 
-# Author:Mateusz Kędziora https://mkedziora.pl
-
-# Nazwa projektu
 PROJECT_NAME="fast-links"
-
-# Domyślny port
 DEFAULT_PORT=8080
 
 # Funkcja wyświetlająca sposób użycia
 usage() {
-    echo "Użycie: $0 [-p port]"
-    echo "  -p port    Port na którym ma działać aplikacja (domyślnie: $DEFAULT_PORT)"
+    echo "Użycie: $0 [opcje]"
+    echo "Opcje:"
+    echo "  -p, --port PORT    Port na którym ma działać aplikacja (domyślnie: $DEFAULT_PORT)"
+    echo "  -b, --build        Wymuś przebudowanie obrazu"
+    echo "  -d, --down         Zatrzymaj i usuń kontenery"
     exit 1
 }
 
+# Domyślne wartości
+BUILD_FLAG=""
+PORT=$DEFAULT_PORT
+ACTION="up"
+
 # Przetwarzanie argumentów
-while getopts ":p:" opt; do
-    case ${opt} in
-        p )
-            PORT=$OPTARG
+ARGS=$(getopt -o p:bd --long port:,build,down -n "$0" -- "$@")
+eval set -- "$ARGS"
+
+while true; do
+    case "$1" in
+        -p|--port)
+            PORT="$2"
+            shift 2
             ;;
-        \? )
+        -b|--build)
+            BUILD_FLAG="--build"
+            shift
+            ;;
+        -d|--down)
+            ACTION="down"
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
             usage
             ;;
     esac
 done
 
-# Jeśli port nie został podany, użyj domyślnego
-PORT=${PORT:-$DEFAULT_PORT}
+# Eksportuj zmienne środowiskowe
+export PROJECT_NAME
+export PORT
 
-# Zatrzymaj i usuń stary kontener, jeśli istnieje
-echo "Zatrzymywanie i usuwanie starego kontenera..."
-docker stop $PROJECT_NAME 2>/dev/null
-docker rm $PROJECT_NAME 2>/dev/null
-
-# Zbuduj nowy obraz
-echo "Budowanie nowego obrazu..."
-docker build -t $PROJECT_NAME .
-
-# Uruchom nowy kontener
-echo "Uruchamianie nowego kontenera na porcie $PORT..."
-docker run -d --name $PROJECT_NAME -p $PORT:8080 $PROJECT_NAME
-
-# Wyświetl informacje o uruchomionym kontenerze
-echo "Kontener uruchomiony. Szczegóły:"
-docker ps --filter name=$PROJECT_NAME
-
-echo "Aplikacja dostępna pod adresem: http://localhost:$PORT"
+# Wykonaj akcję
+if [ "$ACTION" == "down" ]; then
+    echo "Zatrzymywanie i usuwanie kontenerów..."
+    docker compose down
+else
+    echo "Uruchamianie kontenera na porcie $PORT..."
+    docker compose up -d $BUILD_FLAG
+    
+    # Wyświetl informacje o uruchomionym kontenerze
+    echo "Kontener uruchomiony. Szczegóły:"
+    docker compose ps
+    
+    echo "Aplikacja dostępna pod adresem: http://0.0.0.0:$PORT"
+fi

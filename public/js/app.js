@@ -1,18 +1,55 @@
 let lastData = "";
 const urlParams = new URLSearchParams(window.location.search);
 const id = urlParams.get("id");
-let new_url = "";
 let fetchingData;
 let newWindow;
-document.getElementById("startBtn").addEventListener("click", function () {
-  document.getElementById("info").textContent = "Waiting for a new address...";
-  newWindow = window.open("about:blank", "_blank", "");
+let listening = false;
+const startBtn = document.getElementById("startBtn");
+const autoListen = document.getElementById("autoListen");
+const saveOldLink = document.getElementById("saveOldLink");
+const info = document.getElementById("info");
+const toast = document.getElementById("toast");
+
+autoListen.addEventListener("click", function () {
+  if (autoListen.checked) {
+    saveOldLink.checked = true;
+    toast.textContent = "Attention! You must allow pop-ups to use this feature!";
+    toast.classList.add("show");
+    setTimeout(() => {
+      toast.classList.remove("show");
+    }, 3000);
+  }
+});
+
+saveOldLink.addEventListener("click", function () {
+  if (autoListen.checked && !this.checked) autoListen.checked = false;
+});
+
+startBtn.addEventListener("click", function () {
+  info.textContent = "Waiting for a new address...";
+  listening = !listening;
+  if (listening) startBtn.textContent = "Stop listening";
+  else {
+    startBtn.textContent = "Start listening";
+    clearInterval(fetchingData);
+    return;
+  }
+
+  if (!saveOldLink.checked) {
+    lastData = "";
+    const a = document.getElementById("url");
+    a.href = "";
+    a.textContent = "";
+  }
+  openNewTab();
   fetchingData = setInterval(checkForNewAddress, 1000);
 });
 
-function checkForNewAddress() {
-  // Dodanie parametru id do URL zapytania
+function openNewTab() {
+  newWindow = window.open("about:blank", "_blank", "");
+}
 
+function checkForNewAddress() {
   const apiUrl = id ? `/api/get?id=${encodeURIComponent(id)}` : "/api/get";
 
   fetch(apiUrl, {
@@ -39,7 +76,7 @@ function checkForNewAddress() {
         const a = document.getElementById("url");
         a.href = url;
         a.textContent = url;
-        console.log(newWindow);
+
         if (newWindow) {
           console.log("ustawiono nowy adres");
           newWindow.location.href = id
@@ -47,9 +84,16 @@ function checkForNewAddress() {
             : "/api/url";
         }
 
-        document.getElementById("info").textContent =
+        info.textContent =
           "The page has opened; if not, click the link below. Link waiting is disabled.";
-        clearInterval(fetchingData);
+
+        if (!autoListen.checked) {
+          clearInterval(fetchingData);
+          listening = false;
+          document.getElementById("startBtn").textContent = "Start listening";
+        } else {
+          openNewTab();
+        }
       }
     })
     .catch((error) => {

@@ -8,24 +8,17 @@ import (
 	"log"
 	"mkedziora/fast-links/kvstore"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 )
-
-// var (
-// 	dataMap map[string]DataEntry
-// 	mu      sync.Mutex
-// )
-
-// func init() {
-// 	dataMap = make(map[string]DataEntry)
-// }
 
 var store *kvstore.KVStore
 
 func init() {
 	var err error
-	store, err = kvstore.NewKVStore("data.db")
+	filePath := os.Getenv("DATA_FILE_PATH")
+	store, err = kvstore.NewKVStore(filePath)
 	if err != nil {
 		log.Fatalf("Failed to create KVStore: %v", err)
 	}

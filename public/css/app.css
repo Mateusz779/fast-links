@@ -23,6 +23,52 @@ body {
     color: var(--text-color);
 }
 
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    justify-content: center;
+}
+
+.checkbox-container input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: var(--primary-color); /* Umożliwia zmianę koloru checkboxa */
+}
+
+.checkbox-container label {
+    color: var(--text-color);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.checkbox-container label:hover {
+    color: var(--primary-color);
+}
+
+.toast {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: var(--primary-color);
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px var(--shadow-color);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.5s ease, visibility 0.5s ease;
+    z-index: 1000; /* Umożliwia wyświetlanie toastu nad innymi elementami */
+}
+
+.toast.show {
+    opacity: 1;
+    visibility: visible;
+}
+
 .container {
     max-width: 600px;
     width: 100%;
