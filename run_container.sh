@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 PROJECT_NAME="fast-links"
 DEFAULT_PORT=8080
