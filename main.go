@@ -5,24 +5,30 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
+	"mkedziora/fast-links/kvstore"
 	"net/http"
 	"strconv"
-	"sync"
 	"time"
 )
 
-type DataEntry struct {
-	Value     string
-	Timestamp time.Time
-}
+// var (
+// 	dataMap map[string]DataEntry
+// 	mu      sync.Mutex
+// )
 
-var (
-	dataMap map[string]DataEntry
-	mu      sync.Mutex
-)
+// func init() {
+// 	dataMap = make(map[string]DataEntry)
+// }
+
+var store *kvstore.KVStore
 
 func init() {
-	dataMap = make(map[string]DataEntry)
+	var err error
+	store, err = kvstore.NewKVStore("data.db")
+	if err != nil {
+		log.Fatalf("Failed to create KVStore: %v", err)
+	}
 }
 
 func setHandler(w http.ResponseWriter, r *http.Request) {
@@ -42,7 +48,7 @@ func setHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	mu.Lock()
+	// mu.Lock()
 	if input.ID == "" {
 		input.ID = "default"
 	}
@@ -64,11 +70,12 @@ func setHandler(w http.ResponseWriter, r *http.Request) {
 
 	expirationTime := time.Now().Add(time.Duration(expireSeconds) * time.Second)
 
-	dataMap[input.ID] = DataEntry{
-		Value:     input.Data,
-		Timestamp: expirationTime,
-	}
-	mu.Unlock()
+	store.SetWithTimestamp("key_"+input.ID, input.Data, expirationTime)
+	// dataMap[input.ID] = DataEntry{
+	// 	Value:     input.Data,
+	// 	Timestamp: expirationTime,
+	// }
+	// mu.Unlock()
 
 	w.WriteHeader(http.StatusNoContent)
 }
@@ -79,12 +86,14 @@ func getHandler(w http.ResponseWriter, r *http.Request) {
 		id = "default"
 	}
 
-	mu.Lock()
-	entry, exists := dataMap[id]
-	mu.Unlock()
+	// mu.Lock()
+	// entry, exists := dataMap[id]
+	// mu.Unlock()
+
+	entry, exists := store.Get("key_" + id)
 
 	if !exists || time.Since(entry.Timestamp) > 30*time.Second {
-		delete(dataMap, id)
+		store.Delete("key_" + id)
 		http.Error(w, "No data available", http.StatusNotFound)
 		return
 	}
@@ -99,12 +108,9 @@ func getUrlHandler(w http.ResponseWriter, r *http.Request) {
 		id = "default"
 	}
 
-	mu.Lock()
-	entry, exists := dataMap[id]
-	mu.Unlock()
-
+	entry, exists := store.Get("key_" + id)
 	if !exists || time.Since(entry.Timestamp) > 30*time.Second {
-		delete(dataMap, id)
+		store.Delete("key_" + id)
 		http.Error(w, "No data available", http.StatusNotFound)
 		return
 	}
@@ -114,6 +120,7 @@ func getUrlHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+
 	// Obsługa endpointów API
 	http.HandleFunc("/api/set", setHandler)
 	http.HandleFunc("/api/get", getHandler)
@@ -150,9 +157,10 @@ func main() {
 
 	go func() {
 		for {
-			for id, timestamp := range dataMap {
+
+			for id, timestamp := range store.GetAll() {
 				if time.Now().After(timestamp.Timestamp) {
-					delete(dataMap, id)
+					store.Delete(id)
 					break
 				}
 			}
