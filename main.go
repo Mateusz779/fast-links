@@ -132,12 +132,20 @@ func main() {
 		http.ServeFile(w, r, "public/app.html")
 	})
 
-	http.HandleFunc("/style_index.css", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "public/style_index.css")
+	http.HandleFunc("/css/index.css", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "public/css/index.css")
 	})
 
-	http.HandleFunc("/style_app.css", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "public/style_app.css")
+	http.HandleFunc("/css/app.css", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "public/css/app.css")
+	})
+
+	http.HandleFunc("/js/index.js", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "public/js/index.js")
+	})
+
+	http.HandleFunc("/js/app.js", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "public/js/app.js")
 	})
 
 	go func() {
