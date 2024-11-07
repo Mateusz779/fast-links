@@ -10,11 +10,11 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o main .
 # Etap minifikacji
 FROM node:alpine AS minifier
 WORKDIR /app
-RUN npm install -g minify
+RUN yarn global add html-minifier clean-css-cli terser
 COPY public/ ./public/
-RUN find ./public -name "*.html" -exec minify -o {} {} \;
-RUN find ./public/css -name "*.css" -exec minify -o {} {} \;
-RUN find ./public/js -name "*.js" -exec minify -o {} {} \;
+RUN find ./public -name "*.html" -exec html-minifier --collapse-whitespace --remove-optional-tags --minify-js true --minify-css true {} -o {} \;
+RUN find ./public/css -name "*.css" -exec cleancss -o {} {} \;
+RUN find ./public/js -name "*.js" -exec terser {} --compress --mangle --output {} \;
 
 FROM alpine:latest
 RUN apk --no-cache add ca-certificates
